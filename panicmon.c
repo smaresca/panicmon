@@ -28,9 +28,12 @@ static struct netpoll np_t;
 static char *iface = NULL;
 static char *src_ip = NULL;
 static char *dst_ip = NULL;
-static int src_port = 20000;
-static int dst_port = 20000;
 char message[MESSAGE_SIZE];
+/* wish we could use u16 here, but module_param macros
+ *	only handle u32. do range check
+ */
+static unsigned int src_port = 20000;
+static unsigned int dst_port = 20000;
 
 MODULE_PARM_DESC(iface, "Panicmon src iface");
 MODULE_PARM_DESC(src_ip, "Panicmon src_ip");
@@ -40,8 +43,8 @@ MODULE_PARM_DESC(dst_port, "Panicmon dst_port");
 module_param(iface, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 module_param(src_ip, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 module_param(dst_ip, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(src_port, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(dst_port, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(src_port, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(dst_port, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
 static void update_panicmon_net(void) {
     np_t.name = "LRNG";
@@ -117,6 +120,11 @@ int init_module(void) {
 
     if ( !iface ){
         printk(KERN_INFO MODULE_NAME ": Could not initialize (iface parameter not set).\n");
+        return -1;
+    }
+
+    if ( src_port > 65535 || dst_port > 65535 || src_port == 0 || dst_port == 0 ){
+        printk(KERN_INFO MODULE_NAME ": Invalid src/dst port value. Valid range is [1,65535].\n");
         return -1;
     }
 
