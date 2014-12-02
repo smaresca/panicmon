@@ -6,7 +6,7 @@ Instructions
     b) make sure a full development toolchain is installed
     c) run 'make'
   2) Insert the kernel module. Parameters are required at insertion time.
-    e.g. panicmon.ko src_ip=10.0.0.148 dst_ip=10.0.0.142 iface=eth0
+    e.g. insmod panicmon.ko src_ip=10.0.0.148 dst_ip=10.0.0.142 iface=eth0
          alternatively use modprobe if preference/requirement dictates.
     NOTE: parameters can be modified at runtime via /sys/module/panicmon/parameters/*
   3) run dmesg to see some status and initialization output
