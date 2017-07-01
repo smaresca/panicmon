@@ -5,6 +5,7 @@
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
 #include <asm/pgtable.h>
+#include <asm/uaccess.h>
 #include <linux/notifier.h> /* For notifier support */
 
 #include <linux/proc_fs.h>
@@ -17,6 +18,9 @@ MODULE_LICENSE("GPL");
 
 
 #include <linux/netpoll.h>
+#include <linux/net.h>
+#include <net/sock.h>
+
 #define MESSAGE_SIZE 1024
 #define MODULE_NAME "panicmon"
 
@@ -69,10 +73,43 @@ static void update_panicmon_net(void) {
 
 }
 
+void fallback_send(void){
+    struct socket *sock = NULL;
+    struct sockaddr_in sendAddr;
+    struct msghdr message;
+    struct iovec iov;
+    int fd = 0;
+    mm_segment_t old_fs;
 
+    char *buf = "Test Message";
+    fd = sock_create (PF_INET, SOCK_DGRAM, IPPROTO_UDP, &sock);
+    sendAddr.sin_family = AF_INET;
+    sendAddr.sin_addr.s_addr = in_aton(src_ip);
+    sendAddr.sin_port = dst_port;
+#ifdef SK_CAN_REUSE
+    sock->sk->sk_reuse = SK_CAN_REUSE;
+#else
+    sock->sk->sk_reuse = 1;
+#endif
+    memset(&message, 0, sizeof(message));
+    message.msg_name = &sendAddr;
+    message.msg_namelen = sizeof(sendAddr);
+    iov.iov_base = buf;
+    iov.iov_len = strlen(buf);
+    message.msg_iov = &iov;
+    message.msg_iovlen = 1;
+    message.msg_control = NULL;
+    message.msg_controllen = 0;
+    old_fs = get_fs();
+    set_fs(KERNEL_DS);
+    sock_sendmsg(sock, &message, sizeof(struct msghdr));
+    set_fs(old_fs);
+
+
+}
 
 /*
- * Panicing.
+ * Panicking.
  *
  * Don't. But if you did, this is what happens.
  */
