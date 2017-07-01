@@ -1,5 +1,7 @@
 Copyright (c) Steve Maresca/Zentific LLC 
 
+Panicmon: A kernel module for sending a last-gasp notification of a kernel panic over the network
+
 Instructions
   1) Build the module
     a) make sure kernel headers are installed
@@ -16,6 +18,8 @@ To test the module, run tcpdump on the receiving host and run 'echo c > /proc/sy
 Notes:
     IPv6 is unsupported at the moment.
     UDP is the protocol used for sending data.
+    Requires netpoll support.
+    Use -DLEGACY=1 to support older kernels that fail to build
 
 Parameters supported:
 
