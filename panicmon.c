@@ -53,15 +53,15 @@ static void update_panicmon_net(void) {
     // http://stackoverflow.com/questions/9941030/get-ip-address-of-local-nic-from-kernel-module
     strlcpy(np_t.dev_name, iface, IFNAMSIZ);
 
-    /* for systems where this is not a union
-    */ 
-    //np_t.local_ip = in_aton(src_ip);
-    //np_t.remote_ip = in_aton(dst_ip);
-
-    /* for systems where this is a union
-    */ 
+#ifndef LEGACY
+    /* for systems where the below is not a union */
+    np_t.local_ip = in_aton(src_ip);
+    np_t.remote_ip = in_aton(dst_ip);
+#else
+    /* for systems where this is a union */
     np_t.local_ip.ip = in_aton(src_ip);
     np_t.remote_ip.ip = in_aton(dst_ip);
+#endif
 
     np_t.local_port = src_port;
     np_t.remote_port = dst_port;
