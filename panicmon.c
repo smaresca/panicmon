@@ -104,7 +104,8 @@ static struct notifier_block onpanic = {
 };
 
 int init_module(void) {
-    printk(KERN_INFO MODULE_NAME ": Loaded.\n");
+    int rc = 0;
+    printk(KERN_INFO MODULE_NAME ": Loading.\n");
 
     //validation and init
 
@@ -128,13 +129,18 @@ int init_module(void) {
         return -1;
     }
 
-    update_panicmon_net();
-    netpoll_print_options(&np_t);
-    netpoll_setup(&np_t);
-    np = &np_t;
+    rc = netpoll_setup(&np_t);
+    if(rc == 0){
+        printk(KERN_INFO MODULE_NAME ": Netpoll setup successful.\n");
+        netpoll_print_options(&np_t);
+        np = &np_t;
+    } else {
+        printk(KERN_INFO MODULE_NAME ": Failed to initialize netpoll.\n");
+    }
 
     atomic_notifier_chain_register(&panic_notifier_list, &onpanic);
     printk(KERN_INFO MODULE_NAME ": Registered panic notifier.\n");
+    printk(KERN_INFO MODULE_NAME ": Loaded.\n");
 
     return 0;
 }
