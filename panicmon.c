@@ -47,7 +47,7 @@ module_param(src_port, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 module_param(dst_port, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
 static void update_panicmon_net(void) {
-    np_t.name = "LRNG";
+    np_t.name = "panicmon";
 
     // to auto-configure ... which is probably not desireable
     // http://stackoverflow.com/questions/9941030/get-ip-address-of-local-nic-from-kernel-module
@@ -129,6 +129,7 @@ int init_module(void) {
         return -1;
     }
 
+    update_panicmon_net();
     rc = netpoll_setup(&np_t);
     if(rc == 0){
         printk(KERN_INFO MODULE_NAME ": Netpoll setup successful.\n");
